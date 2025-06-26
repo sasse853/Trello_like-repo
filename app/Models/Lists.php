@@ -2,15 +2,23 @@
 
 namespace App\Models;
 
+use App\Models\Boards;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Events\ListUpdated;
 use Illuminate\Database\Eloquent\Model;
 
 class Lists extends Model
 {
     use HasFactory;
 
+
     // Colonnes que l'on peut remplir via les requêtes
-    protected $fillable = ['id', 'board_id', 'name'];
+    protected $fillable = [ 'board_id', 'name'];
+
+
+    protected $dispatchesEvents = [
+        'updated' => ListUpdated::class,
+    ];
 
     /**
      * Un post appartient à un board.
@@ -22,7 +30,12 @@ class Lists extends Model
 
     public function board()
     {
-        return $this->belongsTo(Board::class);
+        return $this->belongsTo(Boards::class);
     }
+
+    public function items()
+{
+    return $this->hasMany(ListItem::class, 'list_id');
+}
 
 }

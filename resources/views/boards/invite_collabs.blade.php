@@ -1,0 +1,127 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Carte de modification du board -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Modifier le Board</h2>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('boards.update', $board) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nom :</label>
+                            <input type="text" id="name" name="name" class="form-control" value="{{ $board->name }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description :</label>
+                            <textarea id="description" name="description" class="form-control" rows="4">{{ $board->description }}</textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Modifier</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Carte pour inviter un collaborateur -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">Inviter un collaborateur</h3>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('boards.invite', ['board' => $board->id]) }}" method="POST" class="row g-3 align-items-end">
+                        @csrf
+                        <div class="col-md-8">
+                            <label for="email" class="form-label">Email du collaborateur :</label>
+                            <input type="email" name="email" id="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-info text-white w-100">
+                                <i class="bi bi-envelope-plus me-2"></i>Inviter
+                            </button>
+                        </div>
+                    </form>
+                    
+                    @if(session('success'))
+                        <div class="alert alert-success mt-3">
+                            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+                        </div>
+                    @endif
+                    @if(session('error'))
+                        <div class="alert alert-danger mt-3">
+                            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Carte pour la liste des membres -->
+            <div class="card shadow-lg">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="mb-0">Membres du board</h3>
+                </div>
+                <div class="card-body">
+                    @if(count($board->members) > 0)
+                        <ul class="list-group list-group-flush">
+                            @foreach($board->members as $member)
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                <div>
+                                    <i class="bi bi-person-fill me-2"></i>
+                                    <span class="fw-medium">{{ $member->name }}</span>
+                                    <span class="text-muted ms-2">({{ $member->email }})</span>
+                                </div>
+                                <form action="{{ route('boards.members.remove', ['board' => $board->id, 'member' => $member->id]) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm" 
+                                        onclick="return confirm('Voulez-vous vraiment supprimer ce membre ?');">
+                                        <i class="bi bi-person-x me-1"></i>Supprimer
+                                    </button>
+                                </form>
+                            </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="bi bi-people text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">Aucun membre pour l'instant</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('styles')
+<style>
+    body {
+        background: url('/images/image1.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border-bottom: none;
+        padding: 1rem 1.5rem;
+    }
+    
+    .btn {
+        border-radius: 5px;
+        padding: 0.5rem 1rem;
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+@endsection

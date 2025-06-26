@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('workspaces', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
-            $table->timestamps();
+        Schema::table('list_items', function (Blueprint $table) {
+            $table->boolean('is_completed')->default(false);
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('workspaces');
+        Schema::table('list_items', function (Blueprint $table) {
+            $table->dropColumn('is_completed');
+        });
     }
 };

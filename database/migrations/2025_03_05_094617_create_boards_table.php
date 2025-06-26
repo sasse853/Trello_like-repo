@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('boards', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
             $table->text('description')->nullable();
+            $table->foreignId('workspace_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -2,26 +2,32 @@
 
 namespace App\Models;
 
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Workspaces extends Model
+class Workspace extends Model
 {
     use HasFactory;
 
     // Colonnes que l'on peut remplir via les requêtes
-    protected $fillable = ['id', 'user_id', 'name'];
+    protected $fillable = [ 'member_id', 'name'];
 
     /**
      * Un post appartient à un board.
      */
-    public function workspaces()
+
+    public function user()
     {
-        return $this->belongsTo(Workspaces::class);
+        return $this->belongsTo(Users::class,'member_id');
     }
 
-    public function users()
+    public function boards()
     {
-        return $this->belongsTo(Users::class);
+        return $this->hasMany(Boards::class,'workspace_id');
     }
+
+
+
+
 }

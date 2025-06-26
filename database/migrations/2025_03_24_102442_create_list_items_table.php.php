@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('workspaces', function (Blueprint $table) {
+        Schema::create('list_items', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
+            $table->foreignId('list_id')->constrained()->onDelete('cascade'); // L'élément appartient à une liste
             $table->timestamps();
         });
     }
@@ -24,6 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('workspaces');
+        Schema::dropIfExists('list_items');
+
     }
 };

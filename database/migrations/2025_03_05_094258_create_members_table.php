@@ -11,19 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('workspaces', function (Blueprint $table) {
+        Schema::create('members', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
+            $table->string('name')->unique();
+            $table->string('email')->unique();
+            $table->string('password');
+            
             $table->timestamps();
         });
     }
+
+  
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('workspaces');
+        Schema::dropIfExists('members');
     }
 };

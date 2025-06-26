@@ -10,7 +10,7 @@ class Notifications extends Model
     use HasFactory;
 
     // Colonnes que l'on peut remplir via les requêtes
-    protected $fillable = ['id', 'user_id', 'message','read_status'];
+    protected $fillable = [ 'type', 'notifiable_id', 'notifiable_type', 'data', 'read_at'];
 
     /**
      * Un post appartient à un board.
@@ -20,8 +20,13 @@ class Notifications extends Model
         return $this->belongsTo(Notifications::class);
     }
 
+    public function notifiable()
+    {
+        return $this->morphTo();
+    }
+
     public function users()
     {
-        return $this->belongsTo(Users::class);
+        return $this->belongsTo(Users::class,'member_id');
     }
 }
