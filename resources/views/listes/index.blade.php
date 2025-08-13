@@ -100,6 +100,7 @@
         margin-top: 15px;
         display: flex;
         gap: 5px;
+        align-items: center;
     }
 
     .add-item-form input {
