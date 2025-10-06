@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Boards;
+use App\Services\NotificationService;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -13,10 +14,10 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-        //
-    }
+    public function register()
+{
+    $this->app->singleton(NotificationService::class);
+}
 
     /**
      * Bootstrap any application services.

@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->dropColumn(['data', 'message','read_status']);
-        });
+        if (Schema::hasColumn('notifications', 'data')) {
+            Schema::table('notifications', function (Blueprint $table) {
+                $table->dropColumn('data');
+            });
+        }
     }
+    
+
 
     /**
      * Reverse the migrations.

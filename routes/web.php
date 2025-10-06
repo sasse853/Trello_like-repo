@@ -5,6 +5,7 @@ use App\Http\Controllers\BoardsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ListController;
 use App\Http\Controllers\ListItemController;
+use App\Http\Controllers\NotificationController;
 
 
 Route::get('/',[UserController::class,'register']);
@@ -32,13 +33,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/boards/{board}/lists', [ListController::class, 'store_lists'])->name('listes.store');
     Route::post('/lists/{list}/items', [ListItemController::class, 'store'])->name('list_items.store');
     Route::patch('/list-items/{item}/toggle', [ListItemController::class, 'toggleCompletion'])->name('list_items.toggle');
-    Route::get('/notifications/{id}/read', function ($id) {
-        $notification = auth()->id->notifications()->find($id);
-        if ($notification) {
-            $notification->markAsRead();
-        }
-        return redirect()->back();
-    })->name('notifications.read');
+    Route::prefix('notifications')->group(function () {
+        Route::get('/recent', [NotificationController::class, 'getRecent']);
+        Route::get('/unread-count', [NotificationController::class, 'getUnreadCount']);
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    });
     Route::delete('/list-items/{id}', [ListItemController::class, 'destroy'])->name('list_items.destroy');
 
     

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Notifications\BoardInvitationNotification;
 use App\Models\Users;
 use App\Models\Lists;
+use App\Services\NotificationService;
 
 class BoardsController extends Controller
 {
@@ -108,7 +109,7 @@ public function create(){
 
 
 
-public function inviteMember(Request $request, Boards $board)
+public function inviteMember(Request $request, Boards $board, NotificationService $notificationService)
 {
     $request->validate([
         'email' => 'required|email|exists:members,email',
@@ -122,10 +123,9 @@ public function inviteMember(Request $request, Boards $board)
     }
 
     // Vérifier si l'utilisateur est bien le propriétaire du workspace du board
-    $user_id=Auth::id();
-    if ( !$board->workspace_id || $board->workspace_id->member_id !== $user_id) {
+    $user_id = Auth::id();
+    if (!$board->workspace_id || $board->workspace_id->member_id !== $user_id) {
         abort(403, "Vous n'avez pas la permission d'ajouter des collaborateurs à ce board.");
-
     }
 
     // Vérifier si l'utilisateur est déjà membre du board
@@ -136,11 +136,17 @@ public function inviteMember(Request $request, Boards $board)
     // Ajouter le membre au board
     $board->members()->attach($member->id);
 
-    $member->notify(new BoardInvitationNotification(Auth::user(),$board));
+    // Envoyer l'email de notification (existant)
+    $member->notify(new BoardInvitationNotification(Auth::user(), $board));
 
+    // NOUVEAU : Créer la notification pour le dashboard
+    // Puisque Users utilise directement la table members, $member EST le member
+    $notificationService->createBoardInvitation($member, $board);
+
+    // Créer la liste personnelle pour le nouveau membre
     $existingList = Lists::where('board_id', $board->id)
-    ->where('name', $member->name)
-    ->first();
+        ->where('name', $member->name)
+        ->first();
 
     if (!$existingList) {
         Lists::create([
@@ -149,9 +155,7 @@ public function inviteMember(Request $request, Boards $board)
         ]);
     }
 
-    return redirect('/Dashboard');
-
-
+    return redirect('/Dashboard')->with('success', 'Membre invité avec succès !');
 }
 
 public function removeMember(Boards $board, Users $member)

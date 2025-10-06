@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Gestion de Tâches</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet"> <!-- Pour les icônes -->
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -38,6 +39,105 @@
             margin-left: 260px;
             padding: 20px;
         }
+        .navbar-custom {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 10px 20px;
+        }
+        
+        /* Styles pour les notifications */
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 20px;
+            color: #007bff;
+            margin-right: 20px;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 50%;
+            min-width: 18px;
+            height: 18px;
+            line-height: 18px;
+            text-align: center;
+            display: none;
+        }
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            font-weight: bold;
+            color: #333;
+        }
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        .notification-item.unread {
+            background-color: #f8f9ff;
+            border-left: 4px solid #007bff;
+        }
+        .notification-content {
+            display: flex;
+            align-items: center;
+        }
+        .notification-icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 20px;
+        }
+        .notification-text {
+            flex: 1;
+            font-size: 14px;
+        }
+        .notification-time {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .no-notifications {
+            padding: 30px;
+            text-align: center;
+            color: #888;
+        }
+        .mark-all-read {
+            padding: 10px 15px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            background: #f8f9fa;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .mark-all-read:hover {
+            background: #e9ecef;
+        }
+        
         .card {
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -82,7 +182,6 @@
     </style>
 </head>
 <body>
-
     <div class="d-flex">
         <!-- Sidebar -->
         <div class="sidebar p-3">
@@ -107,6 +206,38 @@
 
         <!-- Contenu du Dashboard -->
         <div class="content">
+            <!-- Navbar avec notifications -->
+            <div class="navbar-custom d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Bonjour, {{ Auth::user()->name }} !</h5>
+                </div>
+                <div class="d-flex align-items-center">
+                    <!-- Cloche de notifications -->
+                    <div class="notification-container position-relative">
+                        <div class="notification-bell" id="notificationBell">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge" id="notificationBadge">0</span>
+                        </div>
+                        
+                        <!-- Dropdown des notifications -->
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-header">
+                                Notifications récentes
+                            </div>
+                            <div id="notificationList">
+                                <div class="no-notifications">
+                                    <i class="fas fa-bell-slash" style="font-size: 24px; color: #ccc; margin-bottom: 10px;"></i>
+                                    <p>Aucune notification</p>
+                                </div>
+                            </div>
+                            <div class="mark-all-read" id="markAllRead" style="display: none;">
+                                Marquer tout comme lu
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="container">
                 <h1 class="dashboard-title text-center">BIENVENUE SUR VOTRE DASHBOARD</h1>
                 
@@ -148,8 +279,169 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Script pour Echo/Pusher sera ajouté plus tard si nécessaire -->
+    
+    <script>
+        $(document).ready(function() {
+            // Configuration CSRF
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            let notificationDropdown = $('#notificationDropdown');
+            let notificationBell = $('#notificationBell');
+            let notificationBadge = $('#notificationBadge');
+            let isDropdownOpen = false;
+
+            // Charger les notifications au démarrage
+            loadNotifications();
+
+            // Toggle dropdown
+            notificationBell.click(function(e) {
+                e.stopPropagation();
+                if (isDropdownOpen) {
+                    notificationDropdown.hide();
+                    isDropdownOpen = false;
+                } else {
+                    loadNotifications();
+                    notificationDropdown.show();
+                    isDropdownOpen = true;
+                }
+            });
+
+            // Fermer dropdown en cliquant ailleurs
+            $(document).click(function() {
+                if (isDropdownOpen) {
+                    notificationDropdown.hide();
+                    isDropdownOpen = false;
+                }
+            });
+
+            // Empêcher la fermeture en cliquant dans le dropdown
+            notificationDropdown.click(function(e) {
+                e.stopPropagation();
+            });
+
+            // Marquer toutes comme lues
+            $('#markAllRead').click(function() {
+                $.post('/notifications/mark-all-read')
+                    .done(function() {
+                        loadNotifications();
+                    });
+            });
+
+            // Fonction pour charger les notifications
+            function loadNotifications() {
+                $.get('/notifications/recent')
+                    .done(function(data) {
+                        updateNotificationBadge(data.unread_count);
+                        renderNotifications(data.notifications);
+                    })
+                    .fail(function() {
+                        console.error('Erreur lors du chargement des notifications');
+                    });
+            }
+
+            // Fonction pour mettre à jour le badge
+            function updateNotificationBadge(count) {
+                if (count > 0) {
+                    notificationBadge.text(count > 99 ? '99+' : count).show();
+                } else {
+                    notificationBadge.hide();
+                }
+            }
+
+            // Fonction pour afficher les notifications
+            function renderNotifications(notifications) {
+                let notificationList = $('#notificationList');
+                let markAllRead = $('#markAllRead');
+
+                if (notifications.length === 0) {
+                    notificationList.html(`
+                        <div class="no-notifications">
+                            <i class="fas fa-bell-slash" style="font-size: 24px; color: #ccc; margin-bottom: 10px;"></i>
+                            <p>Aucune notification</p>
+                        </div>
+                    `);
+                    markAllRead.hide();
+                    return;
+                }
+
+                let html = '';
+                let hasUnread = false;
+
+                notifications.forEach(function(notification) {
+                    let unreadClass = notification.is_read ? '' : 'unread';
+                    if (!notification.is_read) hasUnread = true;
+
+                    html += `
+                        <div class="notification-item ${unreadClass}" data-id="${notification.id}">
+                            <div class="notification-content">
+                                <i class="${notification.icon} ${notification.color} notification-icon"></i>
+                                <div class="notification-text">
+                                    ${notification.message}
+                                    <div class="notification-time">${notification.time_ago}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                notificationList.html(html);
+                
+                if (hasUnread) {
+                    markAllRead.show();
+                } else {
+                    markAllRead.hide();
+                }
+
+                // Gérer le clic sur une notification
+                $('.notification-item').click(function() {
+                    let notificationId = $(this).data('id');
+                    if ($(this).hasClass('unread')) {
+                        markNotificationAsRead(notificationId, $(this));
+                    }
+                });
+            }
+
+            // Marquer une notification comme lue
+            function markNotificationAsRead(id, element) {
+                $.post(`/notifications/${id}/read`)
+                    .done(function() {
+                        element.removeClass('unread');
+                        loadNotifications(); // Recharger pour mettre à jour le badge
+                    });
+            }
+
+            // Polling toutes les 30 secondes pour vérifier les nouvelles notifications
+            setInterval(function() {
+                $.get('/notifications/unread-count')
+                    .done(function(data) {
+                        updateNotificationBadge(data.count);
+                    });
+            }, 30000);
+
+            // Configuration Echo pour le temps réel (optionnel)
+            if (typeof Echo !== 'undefined') {
+                Echo.private(`user.{{ Auth::id() }}`)
+                    .listen('.notification.created', (e) => {
+                        console.log('Nouvelle notification reçue:', e);
+                        loadNotifications();
+                        
+                        // Animation de la cloche
+                        notificationBell.addClass('animate__animated animate__swing');
+                        setTimeout(() => {
+                            notificationBell.removeClass('animate__animated animate__swing');
+                        }, 1000);
+                    });
+            }
+        });
+    </script>
 </body>
 </html>

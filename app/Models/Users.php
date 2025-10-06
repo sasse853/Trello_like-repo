@@ -4,10 +4,13 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Boards;
+use App\Models\Notifications;
 
 
 class Users extends Authenticatable
