@@ -1,66 +1,235 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Trello_like
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Application de gestion de tâches du genre Trello développée avec Laravel et dockerisée pour un déploiement rapide et uniforme.
 
-## About Laravel
+## 📋 Prérequis
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Avant de commencer, assurez-vous d'avoir installé :
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) (version 20.10 ou supérieure)
+- [Git](https://git-scm.com/downloads)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🚀 Installation
 
-## Learning Laravel
+### 1. Cloner le dépôt
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+git clone https://github.com/sasse853/Trello_like-repo.git
+cd trello_like
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 2. Créer le fichier d'environnement
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Copiez le fichier `.env.example` et renommez-le en `.env` :
 
-## Laravel Sponsors
+```bash
+copy .env.example .env
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Le fichier `.env` est déjà configuré pour fonctionner avec Docker et SQLite.
 
-### Premium Partners
+### 3. Lancer les conteneurs Docker
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```bash
+docker compose up -d --build
+```
 
-## Contributing
+Cette commande va :
+- Construire l'image Docker PHP avec toutes les dépendances nécessaires
+- Démarrer les conteneurs Nginx et PHP-FPM
+- Installer automatiquement les dépendances Composer
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Générer la clé d'application
 
-## Code of Conduct
+```bash
+docker compose exec app php artisan key:generate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 5. Exécuter les migrations
 
-## Security Vulnerabilities
+```bash
+docker compose exec app php artisan migrate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 6. Accéder à l'application
 
-## License
+Ouvrez votre navigateur et accédez à :
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```
+http://localhost:8080
+```
+
+## 🛠️ Architecture Docker
+
+L'application utilise Docker Compose avec les services suivants :
+
+- **app** : Conteneur PHP 8.4-FPM qui exécute l'application Laravel
+- **nginx** : Serveur web qui gère les requêtes HTTP et communique avec PHP-FPM
+- **Base de données** : SQLite (fichier `database/database.sqlite`)
+
+### Structure des fichiers Docker
+
+```
+.
+├── docker/
+│   └── nginx/
+│       └── default.conf    # Configuration Nginx
+├── Dockerfile              # Image PHP personnalisée
+└── docker-compose.yml      # Orchestration des conteneurs
+```
+
+## 📦 Commandes utiles
+
+### Gestion des conteneurs
+
+```bash
+# Démarrer les conteneurs
+docker compose up -d
+
+# Arrêter les conteneurs
+docker compose down
+
+# Voir les logs en temps réel
+docker compose logs -f
+
+# Voir l'état des conteneurs
+docker compose ps
+
+# Redémarrer les conteneurs
+docker compose restart
+```
+
+### Commandes Laravel (Artisan)
+
+```bash
+# Exécuter une commande Artisan
+docker compose exec app php artisan <commande>
+
+# Exemples courants
+docker compose exec app php artisan migrate
+docker compose exec app php artisan db:seed
+docker compose exec app php artisan cache:clear
+docker compose exec app php artisan config:clear
+docker compose exec app php artisan route:list
+docker compose exec app php artisan make:controller NomController
+docker compose exec app php artisan make:model NomModel -m
+```
+
+### Accéder au conteneur
+
+```bash
+# Ouvrir un shell dans le conteneur PHP
+docker compose exec app bash
+
+# Ouvrir un shell dans le conteneur Nginx
+docker compose exec nginx sh
+```
+
+### Gestion de Composer
+
+```bash
+# Installer une nouvelle dépendance
+docker compose exec app composer require nom/package
+
+# Mettre à jour les dépendances
+docker compose exec app composer update
+
+# Installer les dépendances
+docker compose exec app composer install
+```
+
+## 🔧 Configuration
+
+### Variables d'environnement importantes
+
+Dans le fichier `.env` :
+
+```env
+APP_NAME=Trello_like
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8080
+
+DB_CONNECTION=sqlite
+DB_DATABASE=/var/www/html/database/database.sqlite
+```
+
+### Changer le port
+
+Si le port 8080 est déjà utilisé, modifiez cette ligne dans `docker-compose.yml` :
+
+```yaml
+ports:
+  - "NOUVEAU_PORT:80"  # Par exemple "8081:80"
+```
+
+Puis redémarrez les conteneurs :
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+## 🐛 Dépannage
+
+### Le port 8080 est déjà utilisé
+
+Changez le port dans `docker-compose.yml` comme indiqué ci-dessus.
+
+### Erreur de permissions sur les fichiers
+
+```bash
+docker compose exec app chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+```
+
+### Les modifications de code ne sont pas prises en compte
+
+Videz les caches :
+
+```bash
+docker compose exec app php artisan cache:clear
+docker compose exec app php artisan config:clear
+docker compose exec app php artisan view:clear
+```
+
+### Réinitialiser complètement l'environnement
+
+```bash
+# Arrêter et supprimer tous les conteneurs
+docker compose down
+
+# Supprimer l'image construite
+docker rmi trello-app
+
+# Reconstruire et redémarrer
+docker compose up -d --build
+```
+
+## 📝 Développement
+
+### Workflow de développement
+
+1. Modifiez vos fichiers PHP localement (dans `app/`, `routes/`, etc.)
+2. Les modifications sont **automatiquement synchronisées** dans le conteneur grâce aux volumes Docker
+3. Rafraîchissez votre navigateur pour voir les changements
+
+### Tests
+
+```bash
+# Exécuter les tests
+docker compose exec app php artisan test
+
+# Exécuter les tests avec couverture
+docker compose exec app php artisan test --coverage
+```
+
+## 📚 Technologies utilisées
+
+- **Laravel** 11.x - Framework PHP
+- **PHP** 8.4 - Langage de programmation
+- **Nginx** - Serveur web
+- **SQLite** - Base de données
+- **Docker** - Conteneurisation
+- **Docker Compose** - Orchestration des conteneurs
+
+
