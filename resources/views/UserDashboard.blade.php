@@ -12,6 +12,9 @@
             font-family: 'Arial', sans-serif;
             background-color: #f4f7f6;
             color: #333;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
         .sidebar {
             background-color: #007bff;
@@ -212,6 +215,11 @@
                     <h5 class="mb-0">Bonjour, {{ Auth::user()->name }} !</h5>
                 </div>
                 <div class="d-flex align-items-center">
+                    <!-- Bouton upload background -->
+                    <label for="bg-upload" class="btn btn-sm btn-outline-secondary me-3" style="cursor:pointer;">
+                        <i class="fas fa-image"></i> Changer le fond
+                    </label>
+                    <input type="file" id="bg-upload" accept="image/*" style="display:none;">
                     <!-- Cloche de notifications -->
                     <div class="notification-container position-relative">
                         <div class="notification-bell" id="notificationBell">
@@ -298,6 +306,31 @@
             let notificationBell = $('#notificationBell');
             let notificationBadge = $('#notificationBadge');
             let isDropdownOpen = false;
+
+            // === Background Upload ===
+            const savedBg = localStorage.getItem('dashboardBg');
+            if (savedBg) {
+                $('body').css('background-image', `url('${savedBg}')`);
+            }
+
+            $('#bg-upload').on('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageUrl = event.target.result;
+                    $('body').css({
+                        'background-image': `url('${imageUrl}')`,
+                        'background-size': 'cover',
+                        'background-position': 'center',
+                        'background-attachment': 'fixed'
+                    });
+                    localStorage.setItem('dashboardBg', imageUrl);
+                };
+                reader.readAsDataURL(file);
+            });
+            // === Fin Background Upload ===
 
             // Charger les notifications au démarrage
             loadNotifications();

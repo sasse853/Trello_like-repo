@@ -28,7 +28,7 @@
                 <div class="card shadow-lg p-3">
                     <div class="card-body">
                         <h3 class="text-center mb-4">Connexion</h3>
-                        <form action="/Vérification" method="POST">
+                        <form action="/Verification" method="POST">
                             @csrf
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>

@@ -168,7 +168,7 @@
       }
 
       // Événements pour basculer la visibilité des mots de passe
-      togglePassword.addEventListener('click', function() {
+      togglePassword.addEventListener(' click', function() {
         togglePasswordVisibility(passwordField, togglePassword);
       });
 

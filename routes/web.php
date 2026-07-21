@@ -12,7 +12,7 @@ Route::get('/',[UserController::class,'register']);
 Route::get('/login',[UserController::class,'login'])->name('login');
 Route::post('/Traitement',[UserController::class,'ajout_membre']);
 Route::get('/Dashboard',[UserController::class,'user_dashboard']);
-Route::post('/Vérification',[UserController::class,'verify_user']);
+Route::post('/Verification',[UserController::class,'verify_user']);
 Route::get('/Modification',[UserController::class,'password_modification']);
 Route::post('/Modify', [UserController::class,'updatePassword']);
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');
